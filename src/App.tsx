@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { PlaceholderPage } from './pages/PlaceholderPage'
-
+import CustomersPage from './pages/CustomersPage'
 function App() {
   return (
     <Routes>
@@ -20,8 +20,7 @@ function App() {
       />
       <Route
         path="/customers"
-        element={<PlaceholderPage title="Customers" />}
-      />
+        element={<CustomersPage />} />
       <Route path="/products" element={<ProductsPage />} />
       <Route
         path="/settings"

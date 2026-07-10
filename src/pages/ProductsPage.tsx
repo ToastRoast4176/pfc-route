@@ -5,6 +5,9 @@ import {
   type FormEvent,
 } from 'react'
 import { Link } from 'react-router-dom'
+import ProductStatusFilter, {
+  type ProductStatusFilterValue,
+} from '../components/products/ProductStatusFilter'
 import type {
   Product,
   ProductCategory,
@@ -13,17 +16,11 @@ import {
   getProducts,
   saveProducts,
 } from '../services/productStorage'
+import ProductCard from '../components/products/ProductCard'
+import ProductForm, {
+  type ProductFormData,
+} from '../components/products/ProductForm'
 
-type ProductFormData = {
-  name: string
-  code: string
-  upc: string
-  size: string
-  casePack: string
-  unitPrice: string
-  category: ProductCategory
-}
-type ProductStatusFilter = 'active' | 'inactive' | 'all'
 const emptyForm: ProductFormData = {
   name: '',
   code: '',
@@ -42,7 +39,7 @@ export function ProductsPage() {
   const [error, setError] = useState('')
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] =
-  useState<ProductStatusFilter>('active')
+  useState<ProductStatusFilterValue>('active')
 
   useEffect(() => {
     saveProducts(products)
@@ -216,264 +213,36 @@ setShowForm(false)
           placeholder="Search name, code, or UPC"
           className="mb-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-base outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
         />
-<div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-slate-100 p-1">
-  <button
-    type="button"
-    onClick={() => setStatusFilter('active')}
-    className={`rounded-xl px-3 py-2 text-sm font-bold ${
-      statusFilter === 'active'
-        ? 'bg-white text-slate-900 shadow-sm'
-        : 'text-slate-500'
-    }`}
-  >
-    Active
-  </button>
-
-  <button
-    type="button"
-    onClick={() => setStatusFilter('inactive')}
-    className={`rounded-xl px-3 py-2 text-sm font-bold ${
-      statusFilter === 'inactive'
-        ? 'bg-white text-slate-900 shadow-sm'
-        : 'text-slate-500'
-    }`}
-  >
-    Inactive
-  </button>
-
-  <button
-    type="button"
-    onClick={() => setStatusFilter('all')}
-    className={`rounded-xl px-3 py-2 text-sm font-bold ${
-      statusFilter === 'all'
-        ? 'bg-white text-slate-900 shadow-sm'
-        : 'text-slate-500'
-    }`}
-  >
-    All
-  </button>
-</div>
+<ProductStatusFilter
+  value={statusFilter}
+  onChange={setStatusFilter}
+/>
         {showForm && (
-          <form
-            onSubmit={handleSubmit}
-            className="mb-5 space-y-4 rounded-3xl bg-white p-5 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">
-                {editingProductId ? 'Edit Product' : 'Add Product'}
-              </h2>
-
-              <button
-                type="button"
-               onClick={() => {
-  setShowForm(false)
-  setEditingProductId(null)
-  setForm(emptyForm)
-  setError('')
-}}
-                className="px-2 text-xl text-slate-400"
-                aria-label="Close form"
-              >
-                ✕
-              </button>
-            </div>
-
-            <label className="block">
-              <span className="mb-1 block font-semibold text-slate-700">
-                Product name *
-              </span>
-
-              <input
-                value={form.name}
-                onChange={(event) =>
-                  updateForm('name', event.target.value)
-                }
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-red-500"
-              />
-            </label>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="mb-1 block font-semibold text-slate-700">
-                  Code
-                </span>
-
-                <input
-                  value={form.code}
-                  onChange={(event) =>
-                    updateForm('code', event.target.value)
-                  }
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-red-500"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-1 block font-semibold text-slate-700">
-                  UPC
-                </span>
-
-                <input
-                  value={form.upc}
-                  onChange={(event) =>
-                    updateForm('upc', event.target.value)
-                  }
-                  inputMode="numeric"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-red-500"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="mb-1 block font-semibold text-slate-700">
-                Item size
-              </span>
-
-              <input
-                value={form.size}
-                onChange={(event) =>
-                  updateForm('size', event.target.value)
-                }
-                placeholder="Example: 12 oz"
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-red-500"
-              />
-            </label>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="mb-1 block font-semibold text-slate-700">
-                  Case pack *
-                </span>
-
-                <input
-                  value={form.casePack}
-                  onChange={(event) =>
-                    updateForm('casePack', event.target.value)
-                  }
-                  inputMode="numeric"
-                  placeholder="24"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-red-500"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-1 block font-semibold text-slate-700">
-                  Unit price *
-                </span>
-
-                <input
-                  value={form.unitPrice}
-                  onChange={(event) =>
-                    updateForm('unitPrice', event.target.value)
-                  }
-                  inputMode="decimal"
-                  placeholder="3.99"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-red-500"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="mb-1 block font-semibold text-slate-700">
-                Category
-              </span>
-
-              <select
-                value={form.category}
-                onChange={(event) =>
-                  updateForm(
-                    'category',
-                    event.target.value as ProductCategory,
-                  )
-                }
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-red-500"
-              >
-                <option>Grocery</option>
-                <option>Frozen</option>
-                <option>Fish</option>
-                <option>Other</option>
-              </select>
-            </label>
-
-            {error && (
-              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-red-700 px-5 py-4 text-lg font-bold text-white active:scale-[0.98]"
-            >
-              {editingProductId ? 'Update Product' : 'Save Product'}
-            </button>
-          </form>
-        )}
+  <ProductForm
+    form={form}
+    error={error}
+    isEditing={editingProductId !== null}
+    onSubmit={handleSubmit}
+    onChange={updateForm}
+    onClose={() => {
+      setShowForm(false)
+      setEditingProductId(null)
+      setForm(emptyForm)
+      setError('')
+    }}
+  />
+)}
 
         <div className="space-y-3">
           {filteredProducts.map((product) => (
-            <article
-              key={product.id}
-              className={`rounded-2xl border bg-white p-5 shadow-sm ${
-  product.isActive
-    ? 'border-slate-200'
-    : 'border-slate-300 opacity-60'
-}`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="text-lg font-bold text-slate-900">
-                    {product.name}
-                  </h2>
-                  {!product.isActive && (
-  <span className="mt-2 inline-block rounded-full bg-slate-200 px-2 py-1 text-xs font-bold text-slate-600">
-    Inactive
-  </span>
-)}
-
-                  {product.code && (
-                    <p className="mt-1 text-sm font-medium text-slate-500">
-                      Code: {product.code}
-                    </p>
-                  )}
-                </div>
-
-                <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${categoryStyle(
-                    product.category,
-                  )}`}
-                >
-                  {product.category}
-                </span>
-              </div>
-
-              <p className="mt-3 text-sm text-slate-600">
-                {product.size || 'Size not listed'} ·{' '}
-                {product.casePack}/case · $
-                {product.unitPrice.toFixed(2)}/unit
-              </p>
-              <div className="mt-4 flex gap-2">
-  <button
-    type="button"
-    onClick={() => startEditing(product)}
-    className="flex-1 rounded-xl border border-red-200 px-4 py-3 text-sm font-bold text-red-700 active:scale-[0.98]"
-  >
-    Edit
-  </button>
-
-  <button
-    type="button"
-    onClick={() => toggleProductStatus(product.id)}
-    className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold active:scale-[0.98] ${
-      product.isActive
-        ? 'border border-slate-300 text-slate-600'
-        : 'bg-green-600 text-white'
-    }`}
-  >
-    {product.isActive ? 'Deactivate' : 'Reactivate'}
-  </button>
-</div>
-            </article>
-          ))}
+  <ProductCard
+    key={product.id}
+    product={product}
+    categoryStyle={categoryStyle}
+    onEdit={startEditing}
+    onToggleStatus={toggleProductStatus}
+  />
+))}
 
           {filteredProducts.length === 0 && (
             <div className="rounded-3xl bg-white p-8 text-center shadow-sm">
