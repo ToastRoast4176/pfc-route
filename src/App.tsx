@@ -22,10 +22,7 @@ function App() {
         path="/customers"
         element={<PlaceholderPage title="Customers" />}
       />
-      <Route
-        path="/products"
-        element={<PlaceholderPage title="Products" />}
-      />
+      <Route path="/products" element={<ProductsPage />} />
       <Route
         path="/settings"
         element={<PlaceholderPage title="Settings" />}
@@ -35,3 +32,4 @@ function App() {
 }
 
 export default App
+import { ProductsPage } from './pages/ProductsPage'
