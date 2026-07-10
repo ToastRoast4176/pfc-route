@@ -23,7 +23,7 @@ type ProductFormData = {
   unitPrice: string
   category: ProductCategory
 }
-
+type ProductStatusFilter = 'active' | 'inactive' | 'all'
 const emptyForm: ProductFormData = {
   name: '',
   code: '',
@@ -41,24 +41,31 @@ export function ProductsPage() {
   const [form, setForm] = useState<ProductFormData>(emptyForm)
   const [error, setError] = useState('')
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] =
+  useState<ProductStatusFilter>('active')
 
   useEffect(() => {
     saveProducts(products)
   }, [products])
 
   const filteredProducts = useMemo(() => {
-    const query = search.trim().toLowerCase()
+  const query = search.trim().toLowerCase()
 
-    if (!query) {
-      return products
-    }
-
-    return products.filter((product) =>
+  return products.filter((product) => {
+    const matchesSearch =
+      !query ||
       [product.name, product.code, product.upc]
         .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(query)),
-    )
-  }, [products, search])
+        .some((value) => value!.toLowerCase().includes(query))
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && product.isActive) ||
+      (statusFilter === 'inactive' && !product.isActive)
+
+    return matchesSearch && matchesStatus
+  })
+}, [products, search, statusFilter])
 
   function updateForm(
     field: keyof ProductFormData,
@@ -83,6 +90,18 @@ function startEditing(product: Product) {
   setError('')
   setShowForm(true)
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+function toggleProductStatus(productId: string) {
+  setProducts((current) =>
+    current.map((product) =>
+      product.id === productId
+        ? {
+            ...product,
+            isActive: !product.isActive,
+          }
+        : product,
+    ),
+  )
 }
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -197,7 +216,43 @@ setShowForm(false)
           placeholder="Search name, code, or UPC"
           className="mb-4 w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-base outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
         />
+<div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-slate-100 p-1">
+  <button
+    type="button"
+    onClick={() => setStatusFilter('active')}
+    className={`rounded-xl px-3 py-2 text-sm font-bold ${
+      statusFilter === 'active'
+        ? 'bg-white text-slate-900 shadow-sm'
+        : 'text-slate-500'
+    }`}
+  >
+    Active
+  </button>
 
+  <button
+    type="button"
+    onClick={() => setStatusFilter('inactive')}
+    className={`rounded-xl px-3 py-2 text-sm font-bold ${
+      statusFilter === 'inactive'
+        ? 'bg-white text-slate-900 shadow-sm'
+        : 'text-slate-500'
+    }`}
+  >
+    Inactive
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setStatusFilter('all')}
+    className={`rounded-xl px-3 py-2 text-sm font-bold ${
+      statusFilter === 'all'
+        ? 'bg-white text-slate-900 shadow-sm'
+        : 'text-slate-500'
+    }`}
+  >
+    All
+  </button>
+</div>
         {showForm && (
           <form
             onSubmit={handleSubmit}
@@ -358,13 +413,22 @@ setShowForm(false)
           {filteredProducts.map((product) => (
             <article
               key={product.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              className={`rounded-2xl border bg-white p-5 shadow-sm ${
+  product.isActive
+    ? 'border-slate-200'
+    : 'border-slate-300 opacity-60'
+}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h2 className="text-lg font-bold text-slate-900">
                     {product.name}
                   </h2>
+                  {!product.isActive && (
+  <span className="mt-2 inline-block rounded-full bg-slate-200 px-2 py-1 text-xs font-bold text-slate-600">
+    Inactive
+  </span>
+)}
 
                   {product.code && (
                     <p className="mt-1 text-sm font-medium text-slate-500">
@@ -387,13 +451,27 @@ setShowForm(false)
                 {product.casePack}/case · $
                 {product.unitPrice.toFixed(2)}/unit
               </p>
-              <button
-  type="button"
-  onClick={() => startEditing(product)}
-  className="mt-4 rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-700"
->
-  Edit
-</button>
+              <div className="mt-4 flex gap-2">
+  <button
+    type="button"
+    onClick={() => startEditing(product)}
+    className="flex-1 rounded-xl border border-red-200 px-4 py-3 text-sm font-bold text-red-700 active:scale-[0.98]"
+  >
+    Edit
+  </button>
+
+  <button
+    type="button"
+    onClick={() => toggleProductStatus(product.id)}
+    className={`flex-1 rounded-xl px-4 py-3 text-sm font-bold active:scale-[0.98] ${
+      product.isActive
+        ? 'border border-slate-300 text-slate-600'
+        : 'bg-green-600 text-white'
+    }`}
+  >
+    {product.isActive ? 'Deactivate' : 'Reactivate'}
+  </button>
+</div>
             </article>
           ))}
 

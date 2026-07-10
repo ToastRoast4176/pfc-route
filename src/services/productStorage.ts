@@ -10,7 +10,12 @@ export function getProducts(): Product[] {
   }
 
   try {
-    return JSON.parse(savedProducts) as Product[]
+    const parsedProducts = JSON.parse(savedProducts) as Product[]
+
+    return parsedProducts.map((product) => ({
+      ...product,
+      isActive: product.isActive ?? true,
+    }))
   } catch {
     return []
   }
